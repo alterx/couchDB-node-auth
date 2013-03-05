@@ -1,7 +1,9 @@
 var express   = require('express'),
-    everyauth = require('everyauth'),
     routes    = require('./routes/routing'),
-    api       = require('./routes/api');
+    api       = require('./routes/api'),
+    User      = require('./libs/users'),
+    passport = require('passport'), 
+    LocalStrategy = require('passport-local').Strategy;
 
 var app = module.exports = express();
 
@@ -11,46 +13,56 @@ app.configure(function(){
 	app.use(express.cookieParser());
 	app.use(express.methodOverride());
 	app.use(express.session({secret: "90ndsj9dfdsf"}));
-	app.use(everyauth.middleware());
+	app.use(passport.initialize());
+  //app.use(passport.session());
 	app.use(app.router);
 	app.use(express.static(__dirname, '/public'));
 	app.use(express.errorHandler());
 });
 
 
+passport.serializeUser(function(user, done) {
+  done(null, user.id);
+});
+
+passport.deserializeUser(function(id, done) {
+  User.findById(id, function(err, user) {
+    done(err, user);
+  });
+});
+
+
+passport.use(new LocalStrategy(
+  function(username, password, done) {
+    User.findUser( function(err, user) {
+      console.log(user);
+      user.id = user._id;
+      return done(null, user);
+    }, username);
+  }
+));
+
+
+
+
 app.get('/', routes.index);
+
+app.get('/home', routes.loggedIn);
+
+app.get('/login', routes.login);
+
+app.post('/login',
+  passport.authenticate('local', { successRedirect: '/home',
+                                   failureRedirect: '/login',
+                                   failureFlash: true })
+);
 
 // Temporarly get user by name
 app.get('/api/user/:name', api.userExists);
 
 app.post('/api/user', api.insertUser);
 
-app.get('')
-
 app.get('*', routes.index);
-
-
-
-// Routes
-/*
-app.get('/', routes.routing);
-
-
-// JSON API
-
-app.get('/api/get', api.get);
-
-// redirect all others to the index (HTML5 history)/*
-/*app.get('*', routes.routing);
-*/
-
-//RESTful Routes
-/*
-app.get('/api/posts', api.posts);
-app.get('/api/post/:post_id', api.post);
-app.post('/api/posts', api.postAdd);
-app.put('/api/post/:post_id', api.postEdit);
-app.delete('/api/post/:post_id', api.postDelete);*/
 
 
 

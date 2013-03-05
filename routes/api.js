@@ -1,6 +1,5 @@
 var nano      = require('nano'),
 	users     = require('../libs/users'),
-    everyauth = require('everyauth'),
     async     = require('async');
 
 var server = nano('http://admin:admin@127.0.0.1:5984/');
@@ -16,9 +15,9 @@ exports.userExists = function(req, res){
 	],
 	function(err, results) {
 		if (err != "USRNOTFOUND"){
-			res.json({});
-		}else{
 			res.json(results);
+		}else{
+			res.json({});
 		}
 	});
 }
@@ -38,15 +37,9 @@ exports.insertUser = function(req, res){
 	],
 	function(err, results) {
 		if (err != "USRNOTFOUND"){
-			res.json({});
-		}else{
 			res.json(results);
+		}else{
+			res.json({});
 		}
-	});
-}
-
-exports.loggedIn = function(){
-	res.json({
-		logged : everyauth.loggedIn
 	});
 }
