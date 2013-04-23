@@ -2,9 +2,6 @@ var nano      = require('nano'),
 	users     = require('../libs/users'),
     async     = require('async');
 
-var server = nano('http://admin:admin@127.0.0.1:5984/');
-var db = server.use('users');
-
 exports.userExists = function(req, res){
 	var name = req.params.name;
 	async.series(

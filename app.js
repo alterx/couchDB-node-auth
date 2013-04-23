@@ -13,7 +13,7 @@ app.configure(function(){
 	app.use(express.bodyParser());
 	app.use(express.cookieParser());
 	app.use(express.methodOverride());
-	app.use(express.session({secret: "90ndsj9dfdsf"}));
+	app.use(express.session({secret: "holy chimichangas!"}));
 	app.use(passport.initialize());
   app.use(passport.session())
 	app.use(app.router);
