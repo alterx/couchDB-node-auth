@@ -14,8 +14,8 @@ exports.userExists = function(req, res){
 	    }
 	],
 	function(err, results) {
-		if (err != "USRNOTFOUND"){
-			res.json(results);
+		if (results != null){
+			return res.json(results);
 		}else{
 			res.json({});
 		}

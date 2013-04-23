@@ -6,13 +6,16 @@ var db = server.use("users");
 
 
 exports.findUser = function(callback, user){
+
   db.view('users','UserExistence', {key: user}  , function(err, body) {
     if (!err) {
       if (body.rows.length  > 0) {
         callback(null, body.rows[0].value);
       }else{
-        callback("USRNOTEXISTS", null);
+        callback(null, null);
       }
+    }else{
+      throw err;
     }
   });
 }
