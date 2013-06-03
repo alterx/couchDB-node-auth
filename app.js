@@ -9,6 +9,12 @@ var express   = require('express'),
 var app = module.exports = express();
 
 app.configure(function(){
+  app.use('/public', express.compress());
+  //app.use(config.server.staticUrl, express['static'](config.server.distFolder));
+  app.use('/public', function(req, res, next) {
+    res.send(404); // If we get here then the request for a static file is invalid
+  });
+
 	app.set('views', __dirname + '/views');
 	app.use(express.bodyParser());
 	app.use(express.cookieParser());
@@ -23,7 +29,7 @@ app.configure(function(){
 
 
 passport.serializeUser(function(user, done) {
-  done(null, user.username);
+  done(null, user.id);
 });
 
 passport.deserializeUser(function(id, done) {
@@ -34,11 +40,12 @@ passport.deserializeUser(function(id, done) {
 passport.use(new LocalStrategy(
   function(username, password, done) {
       User.findUser( function(err, user) {
+        console.log(user)
         if (err) { return done(err); }
         if (!user) {
           return done(null, false, { message: 'Incorrect username.' });
         }
-        user.id = user.username;
+        user.id = user.id;
         return done(null, user);
 
       }, username);
@@ -46,9 +53,9 @@ passport.use(new LocalStrategy(
 ));
 
 
-app.get('/', routes.index);
+/*app.get('/', routes.index);*/
 
-app.get('/home', ensure.ensureLoggedIn('/login'),
+app.get('/', ensure.ensureLoggedIn('/login'),
   function(req, res) {
     routes.loggedIn(req, res);
   }
@@ -62,7 +69,7 @@ app.get('/logout', function(req, res){
 app.get('/login', routes.login);
 
 app.post('/login',
-  passport.authenticate('local', { successReturnToOrRedirect: '/home', failureRedirect: '/login' })
+  passport.authenticate('local', { successReturnToOrRedirect: '/', failureRedirect: '/login' })
 );
 
 // Temporarly get user by name

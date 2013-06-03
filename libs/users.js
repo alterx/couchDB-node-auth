@@ -2,12 +2,12 @@ var nano   = require('nano'),
     util   = require('util');
 
 var server = nano('http://admin:admin@127.0.0.1:5984/');
-var db = server.use("users");
+var db = server.use("users2");
 
 
 exports.findUser = function(callback, user){
 
-  db.view('users','UserExistence', {key: user}  , function(err, body) {
+  db.view('users2','UserExistence', {key: user}  , function(err, body) {
     if (!err) {
       if (body.rows.length  > 0) {
         callback(null, body.rows[0].value);
