@@ -4,6 +4,7 @@ var express   = require('express'),
     User      = require('./libs/users'),
     passport  = require('passport'), 
     ensure    = require('connect-ensure-login'),
+    crud      = require('./libs/crud'),
     LocalStrategy = require('passport-local').Strategy;
 
 var app = module.exports = express();
@@ -39,8 +40,7 @@ passport.deserializeUser(function(id, done) {
 
 passport.use(new LocalStrategy(
   function(username, password, done) {
-      User.findUser( function(err, user) {
-        console.log(user)
+      crud.checkExistence('users2', 'UserExistence', username, function(err, user) {
         if (err) { return done(err); }
         if (!user) {
           return done(null, false, { message: 'Incorrect username.' });
@@ -48,7 +48,7 @@ passport.use(new LocalStrategy(
         user.id = user.id;
         return done(null, user);
 
-      }, username);
+      });
   }
 ));
 
