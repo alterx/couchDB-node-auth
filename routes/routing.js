@@ -1,7 +1,6 @@
 
 exports.index = function(req, res){
-	res.sendfile('./views/index.html');
-
+	res.sendfile('./public/index.html');
 };
 
 exports.login = function(req, res){

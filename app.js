@@ -5,26 +5,27 @@ var express   = require('express'),
     passport  = require('passport'), 
     ensure    = require('connect-ensure-login'),
     crud      = require('./libs/crud'),
-    LocalStrategy = require('passport-local').Strategy;
+    LocalStrategy = require('passport-local').Strategy,
+    config = require('./config.js');
 
 var app = module.exports = express();
 
 app.configure(function(){
-  app.use('/public', express.compress());
-  //app.use(config.server.staticUrl, express['static'](config.server.distFolder));
-  app.use('/public', function(req, res, next) {
-    res.send(404); // If we get here then the request for a static file is invalid
+  app.use(config.server.staticUrl, express.compress());
+  app.use(config.server.staticUrl, express['static'](config.server.clientApp));
+  app.use(config.server.staticUrl, function(req, res, next) {
+    res.send(404); 
   });
 
 	app.set('views', __dirname + '/views');
 	app.use(express.bodyParser());
 	app.use(express.cookieParser());
 	app.use(express.methodOverride());
-	app.use(express.session({secret: "holy chimichangas!"}));
+	app.use(express.session({secret: config.server.secret}));
 	app.use(passport.initialize());
   app.use(passport.session())
 	app.use(app.router);
-	app.use(express.static(__dirname, '/public'));
+	app.use(express.static(__dirname, config.server.staticUrl));
 	app.use(express.errorHandler());
 });
 
@@ -57,7 +58,7 @@ passport.use(new LocalStrategy(
 
 app.get('/', ensure.ensureLoggedIn('/login'),
   function(req, res) {
-    routes.loggedIn(req, res);
+    routes.index(req, res);
   }
 );
 
@@ -77,11 +78,19 @@ app.get('/api/user/:name', api.userExists);
 
 app.post('/api/user', api.insertUser);
 
+app.post('/api/tasks', function(req, res){
+    crud.list('tasks', '', "projectId:NIMBLE", {} , function(err, result){
+      res.send(result);
+    });
+});
+
+app.post('/api/insert', api.checkPostParams);
+
 app.get('*', routes.index);
 
 
-/* Listen funtion */
-app.listen(3000, function() {
-    console.log("Express server listening on port 3000");
+
+app.listen(config.server.port, function() {
+    console.log("Express server listening on port "+config.server.port);
 });
 

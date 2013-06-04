@@ -1,5 +1,5 @@
 var nano      = require('nano'),
-	users     = require('../libs/users'),
+	crud     = require('../libs/crud'),
     async     = require('async');
 
 exports.userExists = function(req, res){
@@ -35,6 +35,24 @@ exports.insertUser = function(req, res){
 	function(err, results) {
 		if (err != "USRNOTFOUND"){
 			res.json(results);
+		}else{
+			res.json({});
+		}
+	});
+}
+
+exports.checkPostParams = function(req, res){
+	console.log(req.body.username);
+
+	async.series(
+	[
+		function(callback){
+	        crud.findUser(callback,name);        
+	    }
+	],
+	function(err, results) {
+		if (results != null){
+			return res.json(results);
 		}else{
 			res.json({});
 		}

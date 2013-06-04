@@ -1,14 +1,43 @@
 var nano   = require('nano'),
-    util   = require('util');
+    util   = require('util'),
+    http   = require('http'),
+    config = require('../config.js');
 
-var server = nano('http://admin:admin@127.0.0.1:5984/');
-var db = null;
+var server = nano(config.couchDB.host+':'+config.couchDB.port),
+    db = null;
 
 
 var expose = {
 
   list: function (type, id, query, filter, callback){
-    //server.use(type);
+
+    var options = {
+      hostname: config.elasticSearch.host,
+      port: config.elasticSearch.port,
+      path: "/" + type + "/_search?q=" + query,
+      method: 'POST'
+    };
+    console.log(options)
+
+    var req = http.request(options, function(res) {
+      console.log('STATUS: ' + res.statusCode);
+      console.log('HEADERS: ' + JSON.stringify(res.headers));
+      res.setEncoding('utf8');
+      res.on('data', function (chunk) {
+        callback(null, chunk);
+      });
+    });
+
+    req.on('error', function(err) {
+        console.log( err);
+    });
+
+    /*
+    var filString = JSON.stringify(filter);
+    req.write(filString);
+    */
+
+    req.end();
   },
 
   insert: function (type, id, object, callback){
@@ -31,7 +60,7 @@ var expose = {
 
   checkExistence: function (type, view, id, callback) {
     db = server.use(type);
-    console.log(type)
+
     db.view(type, view, {key: id}  , function(err, body) {
       if (!err) {
         if (body.rows.length  > 0) {
@@ -46,29 +75,5 @@ var expose = {
   }
 
 }
+
 module.exports = expose;
-/*
-exports.findUser = function(callback, user){
-
-  db.view('users2','UserExistence', {key: user}  , function(err, body) {
-    if (!err) {
-      if (body.rows.length  > 0) {
-        callback(null, body.rows[0].value);
-      }else{
-        callback(null, null);
-      }
-    }else{
-      throw err;
-    }
-  });
-}
-
-exports.createUser = function(callback, user){
-  db.insert(user, function(err, docs){
-    if(err) throw err;
-
-    callback(null, user);
-  });
-}
-
-*/
