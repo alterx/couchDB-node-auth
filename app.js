@@ -29,7 +29,7 @@ app.configure(function(){
 	app.use(express.errorHandler());
 });
 
-
+//Auth , needs to be moved to the security module
 passport.serializeUser(function(user, done) {
   done(null, user.id);
 });
@@ -67,29 +67,44 @@ app.get('/logout', function(req, res){
     res.redirect('/');
 });
 
+//Temporarly serving login form (needs to be moved into the client app)
 app.get('/login', routes.login);
 
 app.post('/login',
   passport.authenticate('local', { successReturnToOrRedirect: '/', failureRedirect: '/login' })
 );
 
-// Temporarly get user by name
-app.get('/api/user/:name', api.userExists);
-
-app.post('/api/user', api.insertUser);
-
-app.post('/api/tasks', function(req, res){
+// REST CRUD routes
+app.post('/api/list', function(req, res){
     crud.list('tasks', '', "projectId:NIMBLE", {} , function(err, result){
       res.send(result);
     });
 });
 
-app.post('/api/insert', api.checkPostParams);
+app.post('/api/delete', function(req, res){
+    crud.list('tasks', '', "projectId:NIMBLE", {} , function(err, result){
+      res.send(result);
+    });
+});
 
+app.post('/api/insert', function(req, res){
+    crud.list('tasks', '', "projectId:NIMBLE", {} , function(err, result){
+      res.send(result);
+    });
+});
+
+app.post('/api/update', function(req, res){
+    crud.list('tasks', '', "projectId:NIMBLE", {} , function(err, result){
+      res.send(result);
+    });
+});
+
+
+//Redirect every wrong route to index.html
 app.get('*', routes.index);
 
 
-
+//Start server
 app.listen(config.server.port, function() {
     console.log("Express server listening on port "+config.server.port);
 });
