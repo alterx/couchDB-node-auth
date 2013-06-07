@@ -10,6 +10,7 @@ var express   = require('express'),
 
 var app = module.exports = express();
 
+
 app.configure(function(){
   app.use(config.server.staticUrl, express.compress());
   app.use(config.server.staticUrl, express['static'](config.server.clientApp));
@@ -27,6 +28,12 @@ app.configure(function(){
 	app.use(app.router);
 	app.use(express.static(__dirname, config.server.staticUrl));
 	app.use(express.errorHandler());
+});
+
+app.all('/*', function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "X-Requested-With, X-Requested-With, Content-Type, Accept");
+  next();
 });
 
 //Auth , needs to be moved to the security module
@@ -76,7 +83,7 @@ app.post('/login',
 
 // REST CRUD routes
 app.post('/api/list', function(req, res){
-    crud.list('tasks', '', "projectId:NIMBLE", {} , function(err, result){
+    crud.list('tasks', '', "projectId:SIGET", {} , function(err, result){
       res.send(result);
     });
 });
