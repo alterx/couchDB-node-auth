@@ -83,7 +83,7 @@ app.post('/login',
 
 // REST CRUD routes
 app.post('/api/list', function(req, res){
-    crud.list('tasks', '', "projectId:SIGET", {} , function(err, result){
+    crud.list('tasks', '', "projectId:SIGET&projectId:NIMBLE", {} , function(err, result){
       res.send(result);
     });
 });
