@@ -1,32 +1,34 @@
 var express   = require('express'),
     passport  = require('passport'),
-    User      = require('./users'),
+    crud      = require('./crud'),
     LocalStrategy = require('passport-local').Strategy,
     app = express();
 
 var expose = {
 	init : function(){
 
-		passport.use(new LocalStrategy(
-		  function(username, password, done) {
-		      User.findUser( function(err, user) {
-		        if (err) { return done(err); }
-		        if (!user) {
-		          return done(null, false, { message: 'Incorrect username.' });
-		        }
-		        user.id = user.id;
-		        return done(null, user);
-
-		      }, username);
-		  }
-		));
 		passport.serializeUser(function(user, done) {
-		  done(null, user.id);
-		});
-
-		passport.deserializeUser(function(id, done) {
-		  User.findUser(done, id);
-		});
+          done(null, user.id);
+        });
+        
+        passport.deserializeUser(function(id, done) {
+          User.findUser(done, id);
+        });
+        
+        
+        passport.use(new LocalStrategy(
+          function(username, password, done) {
+              crud.checkExistence('users', 'UserExistence',  username + password, function(err, user) {
+                if (err) { return done(err); }
+                if (!user) {
+                  return done(null, false, { message: 'Incorrect username.' });
+                }
+                user.id = user.id;
+                return done(null, user);
+        
+              });
+          }
+        ));
 	},
 
 	isAuthenticated : function(req, res){

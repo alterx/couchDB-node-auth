@@ -1,72 +1,48 @@
 var express   = require('express'),
     routes    = require('./routes/routing'),
     api       = require('./routes/api'),
-    User      = require('./libs/users'),
-    passport  = require('passport'), 
     ensure    = require('connect-ensure-login'),
     crud      = require('./libs/crud'),
-    LocalStrategy = require('passport-local').Strategy,
+    security  = require('./libs/security'),
+    passport  = require('passport'),
     config = require('./config.js');
 
 var app = module.exports = express();
 
 
 app.configure(function(){
-  app.use(config.server.staticUrl, express.compress());
-  app.use(config.server.staticUrl, express['static'](config.server.clientApp));
-  app.use(config.server.staticUrl, function(req, res, next) {
-    res.send(404); 
-  });
-
-	app.set('views', __dirname + '/views');
-	app.use(express.bodyParser());
-	app.use(express.cookieParser());
-	app.use(express.methodOverride());
-	app.use(express.session({secret: config.server.secret}));
-	app.use(passport.initialize());
-  app.use(passport.session())
-	app.use(app.router);
-	app.use(express.static(__dirname, config.server.staticUrl));
-	app.use(express.errorHandler());
+    app.use(config.server.staticUrl, express.compress());
+    app.use(config.server.staticUrl, express['static'](config.server.clientApp));
+    app.use(config.server.staticUrl, function(req, res, next) {
+        res.send(404); 
+    });
+    //app.set('views', __dirname + '/views');
+    app.use(express.bodyParser());
+    app.use(express.cookieParser());
+    app.use(express.methodOverride());
+    app.use(express.session({secret: config.server.secret}));
+    app.use(passport.initialize());
+    app.use(passport.session())
+    app.use(app.router);
+    app.use(express.static(__dirname, config.server.staticUrl));
+    app.use(express.errorHandler());
 });
 
-app.all('/*', function(req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "X-Requested-With, X-Requested-With, Content-Type, Accept");
-  next();
+app.all('*', function(req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "X-Requested-With, X-Requested-With, Content-Type, Accept");
+    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
+    next();
 });
 
-//Auth , needs to be moved to the security module
-passport.serializeUser(function(user, done) {
-  done(null, user.id);
-});
-
-passport.deserializeUser(function(id, done) {
-  User.findUser(done, id);
-});
+security.init();
 
 
-passport.use(new LocalStrategy(
-  function(username, password, done) {
-      crud.checkExistence('users2', 'UserExistence', username, function(err, user) {
-        if (err) { return done(err); }
-        if (!user) {
-          return done(null, false, { message: 'Incorrect username.' });
-        }
-        user.id = user.id;
-        return done(null, user);
-
-      });
-  }
-));
-
-
-/*app.get('/', routes.index);*/
-
+// Redirect to login if not authenticated
 app.get('/', ensure.ensureLoggedIn('/login'),
-  function(req, res) {
-    routes.index(req, res);
-  }
+    function(req, res) {
+        routes.index(req, res);
+    }
 );
 
 app.get('/logout', function(req, res){
@@ -78,32 +54,29 @@ app.get('/logout', function(req, res){
 app.get('/login', routes.login);
 
 app.post('/login',
-  passport.authenticate('local', { successReturnToOrRedirect: '/', failureRedirect: '/login' })
+    security.login
 );
 
 // REST CRUD routes
+
+//List is handled in the app using elasticsearch directly to provide a flexible way to work with faceted/filtered results
+
 app.post('/api/list', function(req, res){
-    crud.list('tasks', '', "projectId:SIGET&projectId:NIMBLE", {} , function(err, result){
+    crud.list('tasks', '', "projectId:NIMBLE", {} , function(err, result){
       res.send(result);
     });
 });
 
 app.post('/api/delete', function(req, res){
-    crud.list('tasks', '', "projectId:NIMBLE", {} , function(err, result){
-      res.send(result);
-    });
+    api.delete(req, res);
 });
 
 app.post('/api/insert', function(req, res){
-    crud.list('tasks', '', "projectId:NIMBLE", {} , function(err, result){
-      res.send(result);
-    });
+    api.insert(req, res);
 });
 
 app.post('/api/update', function(req, res){
-    crud.list('tasks', '', "projectId:NIMBLE", {} , function(err, result){
-      res.send(result);
-    });
+     api.insert(req, res);
 });
 
 

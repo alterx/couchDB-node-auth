@@ -17,15 +17,17 @@ var expose = {
       path: "/" + type + "/_search?q=" + query,
       method: 'POST'
     };
-    console.log(options)
 
     var req = http.request(options, function(res) {
-      console.log('STATUS: ' + res.statusCode);
-      console.log('HEADERS: ' + JSON.stringify(res.headers));
       res.setEncoding('utf8');
+        var resp = "";
       res.on('data', function (chunk) {
-        callback(null, chunk);
+        resp += chunk;//callback(null, chunk);
       });
+        
+        res.on('end', function(){
+            callback(null, resp);
+        });
     });
 
     req.on('error', function(err) {
@@ -40,27 +42,34 @@ var expose = {
     req.end();
   },
 
-  insert: function (type, id, object, callback){
-    db = server.use(type);
-    if(!id){
-      db.insert(object, function(err, doc){
-        if(err) throw err;
+    
 
-        callback(null, body.rows[0].value);
+  insert: function (object, callback){
+    db = server.use(object.type);
+    if(!object.id){
+      db.insert(object.source, function(err, doc){
+          if (!err) {
+            if (doc.ok) {
+              callback(null, doc);
+            }else{
+              callback(null, null);
+            }
+          }else{
+            callback(err, null);
+          }
       });
     }else{
 
     }
   },
 
-  delete: function (type, id, callback){
-    db = server.use(type);
+  delete: function (object, callback){
+    db = server.use(object.type);
     
   },
 
   checkExistence: function (type, view, id, callback) {
     db = server.use(type);
-
     db.view(type, view, {key: id}  , function(err, body) {
       if (!err) {
         if (body.rows.length  > 0) {
