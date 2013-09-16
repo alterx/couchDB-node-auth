@@ -46,8 +46,8 @@ var expose = {
 
   insert: function (object, callback){
     db = server.use(object.type);
-    if(!object.id){
-      db.insert(object.source, function(err, doc){
+    
+      db.insert(object.source, object.id || {}, function(err, doc){
           if (!err) {
             if (doc.ok) {
               callback(null, doc);
@@ -58,9 +58,7 @@ var expose = {
             callback(err, null);
           }
       });
-    }else{
-
-    }
+    
   },
 
   delete: function (object, callback){

@@ -61,6 +61,10 @@ app.post('/login',
 
 //List is handled in the app using elasticsearch directly to provide a flexible way to work with faceted/filtered results
 
+app.options('*', function(req,res){
+    res.send(200);
+});
+
 app.post('/api/list', function(req, res){
     crud.list('tasks', '', "projectId:NIMBLE", {} , function(err, result){
       res.send(result);
